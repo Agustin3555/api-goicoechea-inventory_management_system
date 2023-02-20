@@ -10,35 +10,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id          Int     @default(autoincrement()) @id
-  name        String
-  lastName    String?
-  email       String  @unique
-  password    String
-  role        Role    @default(EMPLOYEE)
+  // Fields -------------------------------------
+  id        Int     @default(autoincrement()) @id
+  name      String
+  lastName  String?
+  email     String  @unique
+  password  String
+  role      Role    @default(EMPLOYEE)
+
+  // Prisma references --------------------------
 }
+
 
 enum Role {
   ADMIN
   EMPLOYEE
 }
 
+
 model Product {
-  id              Int           @default(autoincrement()) @id
-  name            String        @unique
+  // Fields -----------------------------------------------------------------------------------
+  id              Int     @default(autoincrement()) @id
+  manufacturerId  Int?
+  name            String  @unique
   description     String?
   unitPrice       Float
-  stock           Int           @default(0)
-  minStock        Int           @default(0)
+  stock           Int     @default(0)
+  minStock        Int     @default(0)
 
-  manufacturerId  Int?
-  manufacturer    Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  // Prisma references ------------------------------------------------------------------------
+  manufacturer    Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  booleanFields   BooleanProductField[]
+  stringFields    StringProductField[]
+  quantityFields  QuantityProductField[]
+  fractionFields  FractionProductField[]
 }
 
-model Manufacturer {
-  id          Int     @default(autoincrement()) @id
-  name        String  @unique
 
-  products    Product[]
+model Manufacturer {
+  // Fields -------------------------------------
+  id        Int     @default(autoincrement()) @id
+  name      String  @unique
+
+  // Prisma references --------------------------
+  products  Product[]
+}
+
+
+model BooleanProductField {
+  // Fields --------------------------------------------------------
+  productId Int
+  name      String
+  value     Boolean
+
+  // Prisma references ---------------------------------------------
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([productId, name])
+}
+
+
+model StringProductField {
+  // Fields --------------------------------------------------------
+  productId Int
+  name      String
+  value     String
+
+  // Prisma references ---------------------------------------------
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([productId, name])
+}
+
+
+model QuantityProductField {
+  // Fields ----------------------------------------------------------
+  productId   Int
+  name        String
+  value       Float
+  metricUnit  String
+
+  // Prisma references -----------------------------------------------
+  product     Product @relation(fields: [productId], references: [id])
+
+  @@id([productId, name])
+}
+
+
+model FractionProductField {
+  // Fields ----------------------------------------------------------------
+  productId         Int
+  name              String
+  numeratorValue    Int
+  denominatorValue  Int
+  metricUnit        String
+
+  // Prisma references -----------------------------------------------------
+  product           Product @relation(fields: [productId], references: [id])
+
+  @@id([productId, name])
 }

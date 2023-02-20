@@ -24,9 +24,9 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@Req() req: Request) {
-    const user = req['user'];
+    const { id } = req['user'];
 
-    return await this.usersService.findOne(user.id);
+    return await this.usersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))

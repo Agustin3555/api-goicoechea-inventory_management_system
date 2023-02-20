@@ -71,12 +71,14 @@ export class UsersService {
     )
       throw new ConflictException('Email already exists');
 
-    const { password, ...remainingParams } = userParams;
+    const { name, lastName, password, ...remainingParams } = userParams;
 
     const user = await prisma.user.create({
       data: {
-        ...remainingParams,
+        name: name.toLowerCase(),
+        lastName: lastName && lastName.toLowerCase(),
         password: await hash(password, 10),
+        ...remainingParams,
       },
     });
 
