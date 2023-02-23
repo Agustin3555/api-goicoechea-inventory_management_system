@@ -1,8 +1,15 @@
 /* eslint-disable prettier/prettier */
 import { Role } from '@prisma/client';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateUserDto {
+  @IsNotEmpty()
   @IsString()
   name: string;
 
@@ -10,9 +17,11 @@ export class CreateUserDto {
   @IsString()
   lastName?: string;
 
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
+  @IsNotEmpty()
   @IsString()
   password: string;
 

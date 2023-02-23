@@ -3,5 +3,5 @@ import { INestApplicationContext } from '@nestjs/common';
 
 export type Factory = (
   app: INestApplicationContext,
-  count: number,
+  attempts: number,
 ) => Promise<void>;

@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsInt, Min } from 'class-validator';
+import { IsInt, IsPositive } from 'class-validator';
 
 export class IdParamDto {
   @IsInt()
-  @Min(1)
+  @IsPositive()
   @Transform(({ value }: TransformFnParams) => parseInt(value))
   id: number;
 }

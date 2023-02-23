@@ -24,7 +24,11 @@ const checkId = async (id: number) =>
 @Injectable()
 export class UsersService {
   async findAll() {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      orderBy: {
+        role: 'desc',
+      },
+    });
 
     return users.map((user) => getProtectedUser(user));
   }
@@ -55,6 +59,10 @@ export class UsersService {
         name: {
           contains: name.toLowerCase(),
         },
+      },
+      select: {
+        id: true,
+        name: true,
       },
     });
 

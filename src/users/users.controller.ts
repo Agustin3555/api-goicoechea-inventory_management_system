@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard, RoleGuard } from 'src/auth/guards';
+import { IdParamDto } from 'src/tools/dtos/idParam.dto';
 import { CreateUserDto } from './dtos/controllers/createUser.dto';
-import { IdParamDto } from './dtos/controllers/idParam.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
