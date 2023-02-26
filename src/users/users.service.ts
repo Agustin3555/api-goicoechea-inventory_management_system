@@ -69,6 +69,7 @@ export class UsersService {
     return users.map((user) => getProtectedUser(user));
   }
 
+  // TODO: cambiar varias cosas pa
   async create(userParams: Prisma.UserCreateInput) {
     if (
       await prisma.user.findUnique({

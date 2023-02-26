@@ -37,6 +37,10 @@ export class ProductsService {
       where: {
         id,
       },
+      include: {
+        productOffers: true,
+        assortedProductOffers: true,
+      },
     });
 
     if (!product) throw new NotFoundException();
@@ -210,7 +214,7 @@ export class ProductsService {
       stringFields,
       quantityFields,
       fractionFields,
-      ...remainingParams
+      ...remainingParams // TODO: nop
     } = params;
 
     if (
@@ -269,7 +273,6 @@ export class ProductsService {
             id: manufacturerId,
           },
         },
-        ...remainingParams,
         booleanFields: booleanFields && {
           createMany: {
             data: booleanFields,
@@ -290,6 +293,7 @@ export class ProductsService {
             data: fractionFields,
           },
         },
+        ...remainingParams,
       },
       include: {
         booleanFields: true,

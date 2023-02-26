@@ -12,15 +12,17 @@ datasource db {
 
 
 model User {
-  // Fields -------------------------------------
-  id        Int     @default(autoincrement()) @id
+  // Fields ---------------------------------------
+  id        Int       @default(autoincrement()) @id
   name      String
   lastName  String?
-  email     String  @unique
+  email     String    @unique
   password  String
-  role      Role    @default(EMPLOYEE)
+  role      Role      @default(EMPLOYEE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-  // Prisma references --------------------------
+  // Prisma references ----------------------------
 }
 
 
@@ -31,30 +33,36 @@ enum Role {
 
 
 model Product {
-  // Fields -----------------------------------------------------------------------------------
-  id              Int     @default(autoincrement()) @id
+  // Fields ---------------------------------------------------------------------------------------------------
+  id              Int       @default(autoincrement()) @id
   manufacturerId  Int?
-  name            String  @unique
+  name            String    @unique
   description     String?
   unitPrice       Float
-  stock           Int     @default(0)
-  minStock        Int     @default(0)
+  stock           Int       @default(0)
+  minStock        Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
 
-  // Prisma references ------------------------------------------------------------------------
-  manufacturer    Manufacturer?           @relation(fields: [manufacturerId], references: [id])
-  booleanFields   BooleanProductField[]
-  stringFields    StringProductField[]
-  quantityFields  QuantityProductField[]
-  fractionFields  FractionProductField[]
+  // Prisma references ----------------------------------------------------------------------------------------
+  manufacturer          Manufacturer?                     @relation(fields: [manufacturerId], references: [id])
+  booleanFields         BooleanProductField[]
+  stringFields          StringProductField[]
+  quantityFields        QuantityProductField[]
+  fractionFields        FractionProductField[]
+  productOffers         ProductOffer[]
+  assortedProductOffers ProductsOnAssortedProductOffers[]
 }
 
 
 model Manufacturer {
-  // Fields -------------------------------------
-  id        Int     @default(autoincrement()) @id
-  name      String  @unique
+  // Fields ---------------------------------------
+  id        Int       @default(autoincrement()) @id
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-  // Prisma references --------------------------
+  // Prisma references ----------------------------
   products  Product[]
 }
 
@@ -111,4 +119,48 @@ model FractionProductField {
   product           Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
+}
+
+
+model ProductOffer {
+  // Fields --------------------------------------------------------
+  id        Int       @default(autoincrement()) @id
+  productId Int
+  quantity  Int       @default(1)
+  newPrice  Float
+  deadline  DateTime
+  closed    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+
+  // Prisma references ---------------------------------------------
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+
+model AssortedProductOffer {
+  // Fields ---------------------------------------
+  id        Int       @default(autoincrement()) @id
+  newPrice  Float
+  deadline  DateTime
+  closed    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+
+  // Prisma references ----------------------------
+  products  ProductsOnAssortedProductOffers[]
+}
+
+
+model ProductsOnAssortedProductOffers {
+  // Fields -----------------------------------------------------------------------------------------------
+  productId               Int
+  assortedProductOfferId  Int
+  quantity                Int @default(1)
+
+  // Prisma references ------------------------------------------------------------------------------------
+  product               Product               @relation(fields: [productId], references: [id])
+  assortedProductOffer  AssortedProductOffer  @relation(fields: [assortedProductOfferId], references: [id])
+
+  @@id([productId, assortedProductOfferId])
 }
