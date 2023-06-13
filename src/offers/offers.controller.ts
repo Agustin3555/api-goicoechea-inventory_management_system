@@ -24,12 +24,12 @@ export class OffersController {
     //   return await this;
   }
 
-  @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
-  @UsePipes(new ValidationPipe())
-  @Post('/product-offers')
-  async createProductOffer(@Body() body: CreateProductOfferDto) {
-    return await this.offersService.createProductOffer(body);
-  }
+  // @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
+  // @UsePipes(new ValidationPipe())
+  // @Post('/product-offers')
+  // async createProductOffer(@Body() body: CreateProductOfferDto) {
+  //   return await this.offersService.createProductOffer(body);
+  // }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @UsePipes(new ValidationPipe())

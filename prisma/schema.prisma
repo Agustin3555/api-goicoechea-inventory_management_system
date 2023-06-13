@@ -12,7 +12,7 @@ datasource db {
 
 
 model User {
-  // Fields ---------------------------------------
+  // Fields --------------------------------------------------
   id        Int       @default(autoincrement()) @id
   name      String
   lastName  String?
@@ -22,7 +22,17 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 
-  // Prisma references ----------------------------
+  // References ----------------------------------------------
+  productsCreated       Product[]       @relation("createdBy")
+  productsUpdated       Product[]       @relation("updatedBy")
+  categoriesCreated     Category[]      @relation("createdBy")
+  categoriesUpdated     Category[]      @relation("updatedBy")
+  manufacturersCreated  Manufacturer[]  @relation("createdBy")
+  manufacturersUpdated  Manufacturer[]  @relation("updatedBy")
+  offersCreated         Offer[]         @relation("createdBy")
+  offersUpdated         Offer[]         @relation("updatedBy")
+  salesCreated          Sale[]          @relation("createdBy")
+  salesUpdated          Sale[]          @relation("updatedBy")
 }
 
 
@@ -33,39 +43,72 @@ enum Role {
 
 
 model Product {
-  // Fields ---------------------------------------------------------------------------------------------------
+  // Fields -------------------------------------------------------------------------------------------------------
   id              Int       @default(autoincrement()) @id
+  categoryId      Int?
   manufacturerId  Int?
+  createdByUserId Int
+  updatedByUserId Int?
   name            String    @unique
   description     String?
-  unitPrice       Float
   stock           Int       @default(0)
   minStock        Int       @default(0)
+  price           Float     @default(0)
+  imported        Boolean   @default(false)
+  discontinued    Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime?
 
-  // Prisma references ----------------------------------------------------------------------------------------
-  manufacturer          Manufacturer?                     @relation(fields: [manufacturerId], references: [id])
+  // References ---------------------------------------------------------------------------------------------------
+  category              Category?               @relation(fields: [categoryId], references: [id])
+  manufacturer          Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  createdByUser         User                    @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser         User?                   @relation("updatedBy", fields: [updatedByUserId], references: [id])
   booleanFields         BooleanProductField[]
-  stringFields          StringProductField[]
   quantityFields        QuantityProductField[]
   fractionFields        FractionProductField[]
-  productOffers         ProductOffer[]
-  assortedProductOffers ProductsOnAssortedProductOffers[]
+  stringFields          StringProductField[]
+  offers                ProductsOnOffers[]
+  sales                 SalesOnProducts[]
+}
+
+
+model Category {
+  // Fields -----------------------------------------------------------------------------------------
+  id                Int       @default(autoincrement()) @id
+  parentCategoryId  Int?
+  createdByUserId   Int
+  updatedByUserId   Int?
+  name              String    @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime?
+
+  // References -------------------------------------------------------------------------------------
+  parentCategory  Category?   @relation("parent-child", fields: [parentCategoryId], references: [id])
+  createdByUser   User        @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser   User?       @relation("updatedBy", fields: [updatedByUserId], references: [id])
+  categoriesChild Category[]  @relation("parent-child")
+  products        Product[]
 }
 
 
 model Manufacturer {
-  // Fields ---------------------------------------
-  id        Int       @default(autoincrement()) @id
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
+  // Fields ---------------------------------------------------------------------------------
+  id              Int       @default(autoincrement()) @id
+  createdByUserId Int
+  updatedByUserId Int?
+  name            String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
 
-  // Prisma references ----------------------------
-  products  Product[]
+  // References -----------------------------------------------------------------------------
+  createdByUser User      @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser User?     @relation("updatedBy", fields: [updatedByUserId], references: [id])
+  products      Product[]
 }
 
+
+// TODO: actualizar las caracteristicas
 
 model BooleanProductField {
   // Fields --------------------------------------------------------
@@ -73,20 +116,7 @@ model BooleanProductField {
   name      String
   value     Boolean
 
-  // Prisma references ---------------------------------------------
-  product   Product @relation(fields: [productId], references: [id])
-
-  @@id([productId, name])
-}
-
-
-model StringProductField {
-  // Fields --------------------------------------------------------
-  productId Int
-  name      String
-  value     String
-
-  // Prisma references ---------------------------------------------
+  // References ---------------------------------------------
   product   Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
@@ -100,7 +130,7 @@ model QuantityProductField {
   value       Float
   metricUnit  String
 
-  // Prisma references -----------------------------------------------
+  // References -----------------------------------------------
   product     Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
@@ -115,52 +145,104 @@ model FractionProductField {
   denominatorValue  Int
   metricUnit        String
 
-  // Prisma references -----------------------------------------------------
+  // References -----------------------------------------------------
   product           Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
 }
 
 
-model ProductOffer {
+model StringProductField {
   // Fields --------------------------------------------------------
-  id        Int       @default(autoincrement()) @id
   productId Int
-  quantity  Int       @default(1)
-  newPrice  Float
-  deadline  DateTime
-  closed    Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
+  name      String
+  value     String
 
-  // Prisma references ---------------------------------------------
+  // References ---------------------------------------------
   product   Product @relation(fields: [productId], references: [id])
+
+  @@id([productId, name])
 }
 
 
-model AssortedProductOffer {
-  // Fields ---------------------------------------
-  id        Int       @default(autoincrement()) @id
-  newPrice  Float
-  deadline  DateTime
-  closed    Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
+model Offer {
+  // Fields -------------------------------------------------------------------------------------------
+  id              Int       @default(autoincrement()) @id
+  createdByUserId Int
+  updatedByUserId Int?
+  title           String
+  description     String
+  price           Float?
+  startDate       DateTime
+  closeDate       DateTime
+  manualCloseDate DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
 
-  // Prisma references ----------------------------
-  products  ProductsOnAssortedProductOffers[]
+  // References ---------------------------------------------------------------------------------------
+  createdByUser User                @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser User?               @relation("updatedBy", fields: [updatedByUserId], references: [id])
+  products      ProductsOnOffers[]
+  sales         SalesOnOffers[]
 }
 
 
-model ProductsOnAssortedProductOffers {
-  // Fields -----------------------------------------------------------------------------------------------
-  productId               Int
-  assortedProductOfferId  Int
-  quantity                Int @default(1)
+model ProductsOnOffers {
+  // Fields ------------------------------------------------------
+  offerId   Int
+  productId Int
+  quantity  Int @default(1)
 
-  // Prisma references ------------------------------------------------------------------------------------
-  product               Product               @relation(fields: [productId], references: [id])
-  assortedProductOffer  AssortedProductOffer  @relation(fields: [assortedProductOfferId], references: [id])
+  // References --------------------------------------------------
+  offer   Offer   @relation(fields: [offerId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
-  @@id([productId, assortedProductOfferId])
+  @@id([offerId, productId])
+}
+
+
+model Sale {
+  // Fields -----------------------------------------------------------------------------------------
+  id              Int       @default(autoincrement()) @id
+  createdByUserId Int
+  updatedByUserId Int?
+  manualPrice     Float?
+  cashPayment     Boolean
+  cardPayment     Boolean
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
+
+  // References -------------------------------------------------------------------------------------
+  createdByUser User              @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser User?             @relation("updatedBy", fields: [updatedByUserId], references: [id])
+  products      SalesOnProducts[]
+  offers        SalesOnOffers[]
+}
+
+
+model SalesOnProducts {
+  // Fields --------------------------------------------------------
+  productId Int
+  saleId    Int
+  quantity  Int @default(1)
+
+  // References ----------------------------------------------------
+  product   Product @relation(fields: [productId], references: [id])
+  sale      Sale    @relation(fields: [saleId], references: [id])
+
+  @@id([productId, saleId])
+}
+
+
+model SalesOnOffers {
+  // Fields ------------------------------------------------
+  saleId    Int
+  offerId   Int
+  quantity  Int @default(1)
+
+  // References --------------------------------------------
+  sale  Sale  @relation(fields: [saleId], references: [id])
+  offer Offer @relation(fields: [offerId], references: [id])
+
+  @@id([offerId, saleId])
 }

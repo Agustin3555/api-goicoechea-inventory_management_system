@@ -3,7 +3,7 @@ import { Chance } from 'chance';
 import { ManufacturersService } from 'src/manufacturers/manufacturers.service';
 import { Factory } from '../dtos/factory.dto';
 
-export const createManufactures: Factory = async (app, attempts) => {
+export const createManufacturers: Factory = async (app, attempts) => {
   const manufacturesService = app.get(ManufacturersService);
 
   const chance = new Chance();

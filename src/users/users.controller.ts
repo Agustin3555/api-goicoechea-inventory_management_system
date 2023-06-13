@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   Request,
   UseGuards,
@@ -16,53 +17,90 @@ import { JwtAuthGuard, RoleGuard } from 'src/auth/guards';
 import { IdParamDto } from 'src/tools/dtos/idParam.dto';
 import { CreateUserDto } from './dtos/controllers/createUser.dto';
 import { UsersService } from './users.service';
+import { SECTIONS } from 'src/tools';
+import { AppGateway } from 'src/app.gateway';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly gateway: AppGateway,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@Req() req: Request) {
     const { id } = req['user'];
+    const response = await this.usersService.findOne(id);
 
-    return await this.usersService.findOne(id);
+    return response;
   }
+
+  // @UseGuards(JwtAuthGuard)
+  // @Put('me')
+  // async updateMe(@Req() req: Request) {
+  //   const { id } = req['user'];
+  //   const response = await this.usersService.update(id);
+
+  //   this.gateway.sendUpdatedSection(SECTIONS.users);
+  //   return response;
+  // }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @Get()
   async findAll() {
-    return await this.usersService.findAll();
+    const response = await this.usersService.findAll();
+
+    return response;
   }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @UsePipes(new ValidationPipe({ transform: true }))
   @Get(':id')
   async findOne(@Param() param: IdParamDto) {
-    return await this.usersService.findOne(param.id);
+    const { id } = param;
+    const response = await this.usersService.findOne(id);
+
+    return response;
   }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @Get('by/name/:name')
   async findByName(@Param('name') name: string) {
-    return await this.usersService.findByName(name);
+    const response = await this.usersService.findByName(name);
+
+    return response;
   }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @UsePipes(new ValidationPipe())
   @Post()
   async create(@Body() body: CreateUserDto) {
-    return await this.usersService.create(body);
+    const response = await this.usersService.create(body);
+
+    this.gateway.sendUpdatedSection(SECTIONS.users);
+    return response;
   }
 
-  // TODO: controlador para que el admin pueda editar los usuarios
+  // @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
+  // @UsePipes(new ValidationPipe({ transform: true }))
+  // @Put(':id')
+  // async update(@Param() param: IdParamDto) {
+  //   const { id } = param;
+  //   const response = await this.usersService.update(id);
 
-  // TODO: controlador para que el usuario actual pueda editar su propio perfil
+  //   this.gateway.sendUpdatedSection(SECTIONS.users);
+  //   return response;
+  // }
 
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @UsePipes(new ValidationPipe({ transform: true }))
   @Delete(':id')
   async remove(@Param() param: IdParamDto) {
-    await this.usersService.remove(param.id);
+    const { id } = param;
+    const response = await this.usersService.remove(id);
+
+    this.gateway.sendUpdatedSection(SECTIONS.users);
+    return response;
   }
 }

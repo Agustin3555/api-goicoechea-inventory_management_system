@@ -6,8 +6,8 @@ import {
 import { Prisma } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { PrismaService } from 'src/prisma.service';
-import { exclude } from 'src/tools/exclude';
 import { PotectedUserDto } from './dtos/protectedUser.dto';
+import { exclude } from 'src/tools';
 
 const prisma = new PrismaService();
 
@@ -25,9 +25,7 @@ const checkId = async (id: number) =>
 export class UsersService {
   async findAll() {
     const users = await prisma.user.findMany({
-      orderBy: {
-        role: 'desc',
-      },
+      orderBy: [{ role: 'asc' }, { name: 'asc' }],
     });
 
     return users.map((user) => getProtectedUser(user));
@@ -46,11 +44,13 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
     });
+
+    return user;
   }
 
   async findByName(name: string) {

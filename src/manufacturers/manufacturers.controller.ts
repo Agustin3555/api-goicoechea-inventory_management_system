@@ -14,26 +14,38 @@ import { IdParamDto } from 'src/tools/dtos/idParam.dto';
 import { CreateManufacturerDto } from './dtos/controllers/createManufacturer.dto';
 import { UpdateManufacturerDto } from './dtos/controllers/updateManufacturer.dto';
 import { ManufacturersService } from './manufacturers.service';
+import { AppGateway } from 'src/app.gateway';
+import { SECTIONS } from 'src/tools';
 
 @Controller('manufacturers')
 export class ManufacturersController {
-  constructor(private readonly manufacturersService: ManufacturersService) {}
+  constructor(
+    private readonly manufacturersService: ManufacturersService,
+    private readonly gateway: AppGateway,
+  ) {}
 
   @Get()
   async findAll() {
-    return await this.manufacturersService.findAll();
+    const response = await this.manufacturersService.findAll();
+
+    return response;
   }
 
   @Get('by/name/:name')
   async findByName(@Param('name') name: string) {
-    return await this.manufacturersService.findByName(name);
+    const response = await this.manufacturersService.findByName(name);
+
+    return response;
   }
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   @Post()
   async create(@Body() body: CreateManufacturerDto) {
-    return await this.manufacturersService.create(body);
+    const response = await this.manufacturersService.create(body);
+
+    this.gateway.sendUpdatedSection(SECTIONS.manufacturers);
+    return response;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,6 +55,9 @@ export class ManufacturersController {
     @Param() param: IdParamDto,
     @Body() body: UpdateManufacturerDto,
   ) {
-    return await this.manufacturersService.update(param.id, body);
+    const response = await this.manufacturersService.update(param.id, body);
+
+    this.gateway.sendUpdatedSection(SECTIONS.manufacturers);
+    return response;
   }
 }

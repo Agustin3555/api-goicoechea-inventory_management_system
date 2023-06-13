@@ -9,11 +9,11 @@ import { ManufacturersService } from 'src/manufacturers/manufacturers.service';
 import { PrismaService } from 'src/prisma.service';
 import {
   CreateProductDto,
-  FindFieldsByNameDto,
-  SearchForQuantityFieldSuggestionsDto,
-  SearchForStringFieldSuggestionsDto,
-} from './dtos/controllers';
-import { SearchForFractionFieldSuggestionsDto } from './dtos/controllers/searchForFractionFieldSuggestions.dto';
+  GetBooleanCharSuggestionsDto,
+  GetFractionCharSuggestionsDto,
+  GetQuantityCharSuggestionsDto,
+  GetStringCharSuggestionsDto,
+} from './dtos';
 
 const prisma = new PrismaService();
 
@@ -22,24 +22,61 @@ export class ProductsService {
   constructor(private readonly manufacturersService: ManufacturersService) {}
 
   async findAll() {
-    return await prisma.product.findMany({
-      include: {
-        booleanFields: true,
-        stringFields: true,
-        quantityFields: true,
-        fractionFields: true,
+    const products = await prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
       },
     });
+
+    return products;
   }
 
-  async findOne(id: number) {
+  async getOneFullData(id: number) {
     const product = await prisma.product.findUnique({
       where: {
         id,
       },
-      include: {
-        productOffers: true,
-        assortedProductOffers: true,
+      select: {
+        description: true,
+        stock: true,
+        minStock: true,
+        unitPrice: true,
+        createdAt: true,
+        updatedAt: true,
+        manufacturer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        booleanFields: {
+          select: {
+            name: true,
+            value: true,
+          },
+        },
+        quantityFields: {
+          select: {
+            name: true,
+            value: true,
+            metricUnit: true,
+          },
+        },
+        fractionFields: {
+          select: {
+            name: true,
+            numeratorValue: true,
+            denominatorValue: true,
+            metricUnit: true,
+          },
+        },
+        stringFields: {
+          select: {
+            name: true,
+            value: true,
+          },
+        },
       },
     });
 
@@ -62,148 +99,6 @@ export class ProductsService {
     });
 
     return products;
-  }
-
-  async findFieldsByName(params: FindFieldsByNameDto) {
-    const { type, name } = params;
-
-    const optionsQuery = {
-      where: {
-        name: {
-          contains: name,
-        },
-      },
-      select: {
-        name: true,
-      },
-      distinct: ['name'],
-    };
-
-    const queries = {
-      BOOLEAN: async () =>
-        await prisma.booleanProductField.findMany(
-          optionsQuery as Prisma.BooleanProductFieldFindManyArgs,
-        ),
-      STRING: async () =>
-        await prisma.stringProductField.findMany(
-          optionsQuery as Prisma.StringProductFieldFindManyArgs,
-        ),
-      QUANTITY: async () =>
-        await prisma.quantityProductField.findMany(
-          optionsQuery as Prisma.QuantityProductFieldFindManyArgs,
-        ),
-      FRACTION: async () =>
-        await prisma.fractionProductField.findMany(
-          optionsQuery as Prisma.FractionProductFieldFindManyArgs,
-        ),
-    };
-
-    return (await queries[type]()).map((field: { name: string }) => field.name);
-  }
-
-  async searchForStringFieldSuggestions(
-    params: SearchForStringFieldSuggestionsDto,
-  ) {
-    const { name } = params;
-
-    const fields = await prisma.stringProductField.findMany({
-      where: {
-        name,
-      },
-      select: {
-        value: true,
-      },
-      distinct: ['value'],
-    });
-
-    return fields.map((field) => field.value);
-  }
-
-  async searchForQuantityFieldSuggestions(
-    params: SearchForQuantityFieldSuggestionsDto,
-  ) {
-    const { name, valueType } = params;
-
-    const queries = {
-      VALUE: async () => {
-        const fields = await prisma.quantityProductField.findMany({
-          where: {
-            name,
-          },
-          select: {
-            value: true,
-          },
-          distinct: ['value'],
-        });
-
-        return fields.map((field) => field.value);
-      },
-      METRIC_UNIT: async () => {
-        const fields = await prisma.quantityProductField.findMany({
-          where: {
-            name,
-          },
-          select: {
-            metricUnit: true,
-          },
-          distinct: ['metricUnit'],
-        });
-
-        return fields.map((field) => field.metricUnit);
-      },
-    };
-
-    return await queries[valueType]();
-  }
-
-  async searchForFractionFieldSuggestions(
-    params: SearchForFractionFieldSuggestionsDto,
-  ) {
-    const { name, valueType } = params;
-
-    const queries = {
-      NUMERATOR_VALUE: async () => {
-        const fields = await prisma.fractionProductField.findMany({
-          where: {
-            name,
-          },
-          select: {
-            numeratorValue: true,
-          },
-          distinct: ['numeratorValue'],
-        });
-
-        return fields.map((field) => field.numeratorValue);
-      },
-      DENOMINATOR_VALUE: async () => {
-        const fields = await prisma.fractionProductField.findMany({
-          where: {
-            name,
-          },
-          select: {
-            denominatorValue: true,
-          },
-          distinct: ['denominatorValue'],
-        });
-
-        return fields.map((field) => field.denominatorValue);
-      },
-      METRIC_UNIT: async () => {
-        const fields = await prisma.fractionProductField.findMany({
-          where: {
-            name,
-          },
-          select: {
-            metricUnit: true,
-          },
-          distinct: ['metricUnit'],
-        });
-
-        return fields.map((field) => field.metricUnit);
-      },
-    };
-
-    return await queries[valueType]();
   }
 
   async create(params: CreateProductDto) {
@@ -302,5 +197,122 @@ export class ProductsService {
         fractionFields: true,
       },
     });
+  }
+
+  async getBooleanCharSuggestions(params: GetBooleanCharSuggestionsDto) {
+    const { field } = params;
+
+    const selectByField: {
+      [key: string]: Prisma.BooleanProductFieldScalarFieldEnum;
+    } = {
+      KEY: 'name',
+    };
+
+    const selectedField = selectByField[field];
+
+    const chars = await prisma.booleanProductField.findMany({
+      select: {
+        [selectedField]: true,
+      },
+    });
+
+    const suggestions: (number | string)[] = chars.map(
+      (item) => item[selectedField],
+    );
+
+    return suggestions;
+  }
+
+  async getQuantityCharSuggestions(params: GetQuantityCharSuggestionsDto) {
+    const { name, field } = params;
+
+    const selectByField: {
+      [key: string]: Prisma.QuantityProductFieldScalarFieldEnum;
+    } = {
+      KEY: 'name',
+      VALUE: 'value',
+      METRIC_UNIT: 'metricUnit',
+    };
+
+    const selectedField = selectByField[field];
+
+    let query = {
+      select: {
+        [selectedField]: true,
+      },
+      distinct: [selectedField],
+    };
+
+    if (name) query = { ...query, ...{ where: { name } } };
+
+    const chars = await prisma.quantityProductField.findMany(query);
+
+    const suggestions: (number | string)[] = chars.map(
+      (item) => item[selectedField],
+    );
+
+    return suggestions;
+  }
+
+  async getFractionCharSuggestions(params: GetFractionCharSuggestionsDto) {
+    const { name, field } = params;
+
+    const selectByField: {
+      [key: string]: Prisma.FractionProductFieldScalarFieldEnum;
+    } = {
+      KEY: 'name',
+      NUMERATOR_VALUE: 'numeratorValue',
+      DENOMINATOR_VALUE: 'denominatorValue',
+      METRIC_UNIT: 'metricUnit',
+    };
+
+    const selectedField = selectByField[field];
+
+    let query = {
+      select: {
+        [selectedField]: true,
+      },
+      distinct: [selectedField],
+    };
+
+    if (name) query = { ...query, ...{ where: { name } } };
+
+    const chars = await prisma.fractionProductField.findMany(query);
+
+    const suggestions: (number | string)[] = chars.map(
+      (item) => item[selectedField],
+    );
+
+    return suggestions;
+  }
+
+  async getStringCharSuggestions(params: GetStringCharSuggestionsDto) {
+    const { name, field } = params;
+
+    const selectByField: {
+      [key: string]: Prisma.StringProductFieldScalarFieldEnum;
+    } = {
+      KEY: 'name',
+      VALUE: 'value',
+    };
+
+    const selectedField = selectByField[field];
+
+    let query = {
+      select: {
+        [selectedField]: true,
+      },
+      distinct: [selectedField],
+    };
+
+    if (name) query = { ...query, ...{ where: { name } } };
+
+    const chars = await prisma.stringProductField.findMany(query);
+
+    const suggestions: (number | string)[] = chars.map(
+      (item) => item[selectedField],
+    );
+
+    return suggestions;
   }
 }
