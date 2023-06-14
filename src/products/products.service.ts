@@ -1,11 +1,9 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ManufacturersService } from 'src/manufacturers/manufacturers.service';
 import { PrismaService } from 'src/prisma.service';
 import {
   CreateProductDto,
@@ -19,8 +17,6 @@ const prisma = new PrismaService();
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly manufacturersService: ManufacturersService) {}
-
   async findAll() {
     const products = await prisma.product.findMany({
       select: {
@@ -41,7 +37,7 @@ export class ProductsService {
         description: true,
         stock: true,
         minStock: true,
-        unitPrice: true,
+        price: true,
         createdAt: true,
         updatedAt: true,
         manufacturer: {
@@ -101,15 +97,21 @@ export class ProductsService {
     return products;
   }
 
-  async create(params: CreateProductDto) {
+  async create(params: CreateProductDto, userId: number) {
     const {
       name,
       manufacturer,
+      category,
+      description,
+      stock,
+      minStock,
+      price,
+      imported,
+      discontinued,
       booleanFields,
-      stringFields,
       quantityFields,
       fractionFields,
-      ...remainingParams // TODO: nop
+      stringFields,
     } = params;
 
     if (
@@ -120,23 +122,6 @@ export class ProductsService {
       })
     )
       throw new ConflictException('Name already exists');
-
-    let manufacturerId: number;
-
-    if (manufacturer) {
-      if (typeof manufacturer === 'string') {
-        const { id } = await this.manufacturersService.create({
-          name: manufacturer,
-        });
-
-        manufacturerId = id;
-      } else if (typeof manufacturer === 'number')
-        manufacturerId = manufacturer;
-      else
-        throw new BadRequestException([
-          'manufacturer must be number or string',
-        ]);
-    }
 
     const checkUnique = (fields: { name: string }[]) => {
       const nameSet = new Set<string>();
@@ -163,19 +148,30 @@ export class ProductsService {
     return await prisma.product.create({
       data: {
         name,
+        description,
+        stock,
+        minStock,
+        price,
+        imported,
+        discontinued,
         manufacturer: manufacturer && {
           connect: {
-            id: manufacturerId,
+            id: manufacturer,
+          },
+        },
+        category: category && {
+          connect: {
+            id: category,
+          },
+        },
+        createdByUser: {
+          connect: {
+            id: userId,
           },
         },
         booleanFields: booleanFields && {
           createMany: {
             data: booleanFields,
-          },
-        },
-        stringFields: stringFields && {
-          createMany: {
-            data: stringFields,
           },
         },
         quantityFields: quantityFields && {
@@ -188,13 +184,17 @@ export class ProductsService {
             data: fractionFields,
           },
         },
-        ...remainingParams,
+        stringFields: stringFields && {
+          createMany: {
+            data: stringFields,
+          },
+        },
       },
       include: {
         booleanFields: true,
-        stringFields: true,
         quantityFields: true,
         fractionFields: true,
+        stringFields: true,
       },
     });
   }

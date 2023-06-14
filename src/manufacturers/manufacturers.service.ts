@@ -9,8 +9,9 @@ const prisma = new PrismaService();
 export class ManufacturersService {
   async findAll() {
     return await prisma.manufacturer.findMany({
-      include: {
-        _count: true,
+      select: {
+        id: true,
+        name: true,
       },
     });
   }
@@ -28,8 +29,8 @@ export class ManufacturersService {
     });
   }
 
-  async create(manufacturerParams: CreateManufacturerDto) {
-    const { name } = manufacturerParams;
+  async create(params: CreateManufacturerDto, userId: number) {
+    const { name } = params;
 
     if (
       await prisma.manufacturer.findUnique({
@@ -43,6 +44,11 @@ export class ManufacturersService {
     return await prisma.manufacturer.create({
       data: {
         name,
+        createdByUser: {
+          connect: {
+            id: userId,
+          },
+        },
       },
     });
   }

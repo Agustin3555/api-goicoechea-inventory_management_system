@@ -10,9 +10,12 @@ export const createManufacturers: Factory = async (app, attempts) => {
 
   for (let i = 0; i < attempts; i++) {
     try {
-      await manufacturesService.create({
-        name: chance.company(),
-      });
+      await manufacturesService.create(
+        {
+          name: chance.company(),
+        },
+        1,
+      );
     } catch (error) {}
   }
 };

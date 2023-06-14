@@ -42,33 +42,33 @@ export class OffersService {
   //   });
   // }
 
-  async createAssortedProductOffer(params: CreateAssortedProductOfferDto) {
-    const { products, deadline, newPrice } = params;
+  // async createAssortedProductOffer(params: CreateAssortedProductOfferDto) {
+  //   const { products, deadline, newPrice } = params;
 
-    // TODO: validar: si ya existe una oferta igual que este activa
+  //   // TODO: validar: si ya existe una oferta igual que este activa
 
-    products.forEach(
-      async (item) => await this.productsService.getOneFullData(item.product),
-    );
+  //   products.forEach(
+  //     async (item) => await this.productsService.getOneFullData(item.product),
+  //   );
 
-    return await prisma.assortedProductOffer.create({
-      data: {
-        newPrice,
-        deadline: new Date(deadline),
-        products: {
-          create: products.map((item) => {
-            const { product, quantity } = item;
+  //   return await prisma.offer.create({
+  //     data: {
+  //       newPrice,
+  //       deadline: new Date(deadline),
+  //       products: {
+  //         create: products.map((item) => {
+  //           const { product, quantity } = item;
 
-            return {
-              productId: product,
-              quantity,
-            };
-          }),
-        },
-      },
-      include: {
-        products: true,
-      },
-    });
-  }
+  //           return {
+  //             productId: product,
+  //             quantity,
+  //           };
+  //         }),
+  //       },
+  //     },
+  //     include: {
+  //       products: true,
+  //     },
+  //   });
+  // }
 }

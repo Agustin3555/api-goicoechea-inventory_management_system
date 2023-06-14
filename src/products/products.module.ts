@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { ManufacturersService } from 'src/manufacturers/manufacturers.service';
 import { AppGateway } from 'src/app.gateway';
 import {
   ProductsPrivateController,
@@ -8,7 +7,7 @@ import {
 } from './products.controller';
 
 @Module({
-  providers: [ProductsService, ManufacturersService, AppGateway],
+  providers: [ProductsService, AppGateway],
   controllers: [ProductsPublicController, ProductsPrivateController],
 })
 export class ProductsModule {}

@@ -17,16 +17,16 @@ export class CreateProductDto {
   name: string;
 
   @IsOptional()
-  manufacturer?: number | string;
+  @IsInt()
+  manufacturer?: number;
+
+  @IsOptional()
+  @IsInt()
+  category?: number;
 
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  unitPrice: number;
 
   @IsOptional()
   @IsInt()
@@ -37,6 +37,19 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   minStock?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  price?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  imported?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  discontinued?: boolean;
 
   @ValidateNested({ each: true })
   @Type(() => BooleanProductFieldDto)

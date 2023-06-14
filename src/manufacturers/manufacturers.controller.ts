@@ -1,10 +1,12 @@
 import {
   Body,
+  Request,
   Controller,
   Get,
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -18,11 +20,8 @@ import { AppGateway } from 'src/app.gateway';
 import { SECTIONS } from 'src/tools';
 
 @Controller('manufacturers')
-export class ManufacturersController {
-  constructor(
-    private readonly manufacturersService: ManufacturersService,
-    private readonly gateway: AppGateway,
-  ) {}
+export class ManufacturersPublicController {
+  constructor(private readonly manufacturersService: ManufacturersService) {}
 
   @Get()
   async findAll() {
@@ -37,12 +36,25 @@ export class ManufacturersController {
 
     return response;
   }
+}
+
+@Controller('private/manufacturers')
+export class ManufacturersPrivateController {
+  constructor(
+    private readonly manufacturersService: ManufacturersService,
+    private readonly gateway: AppGateway,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   @Post()
-  async create(@Body() body: CreateManufacturerDto) {
-    const response = await this.manufacturersService.create(body);
+  async create(@Body() body: CreateManufacturerDto, @Req() req: Request) {
+    const currentUserId = req['user'].id;
+
+    const response = await this.manufacturersService.create(
+      body,
+      currentUserId,
+    );
 
     this.gateway.sendUpdatedSection(SECTIONS.manufacturers);
     return response;

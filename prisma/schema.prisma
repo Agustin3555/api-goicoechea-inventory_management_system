@@ -43,7 +43,7 @@ enum Role {
 
 
 model Product {
-  // Fields -------------------------------------------------------------------------------------------------------
+  // Fields -------------------------------------------------------------------------------------------------
   id              Int       @default(autoincrement()) @id
   categoryId      Int?
   manufacturerId  Int?
@@ -59,17 +59,17 @@ model Product {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime?
 
-  // References ---------------------------------------------------------------------------------------------------
-  category              Category?               @relation(fields: [categoryId], references: [id])
-  manufacturer          Manufacturer?           @relation(fields: [manufacturerId], references: [id])
-  createdByUser         User                    @relation("createdBy", fields: [createdByUserId], references: [id])
-  updatedByUser         User?                   @relation("updatedBy", fields: [updatedByUserId], references: [id])
-  booleanFields         BooleanProductField[]
-  quantityFields        QuantityProductField[]
-  fractionFields        FractionProductField[]
-  stringFields          StringProductField[]
-  offers                ProductsOnOffers[]
-  sales                 SalesOnProducts[]
+  // References ---------------------------------------------------------------------------------------------
+  category        Category?               @relation(fields: [categoryId], references: [id])
+  manufacturer    Manufacturer?           @relation(fields: [manufacturerId], references: [id])
+  createdByUser   User                    @relation("createdBy", fields: [createdByUserId], references: [id])
+  updatedByUser   User?                   @relation("updatedBy", fields: [updatedByUserId], references: [id])
+  booleanFields   BooleanProductField[]
+  quantityFields  QuantityProductField[]
+  fractionFields  FractionProductField[]
+  stringFields    StringProductField[]
+  offers          ProductsOnOffers[]
+  sales           SalesOnProducts[]
 }
 
 
@@ -111,55 +111,55 @@ model Manufacturer {
 // TODO: actualizar las caracteristicas
 
 model BooleanProductField {
-  // Fields --------------------------------------------------------
+  // Fields ------------------------------------------------------
   productId Int
   name      String
   value     Boolean
 
-  // References ---------------------------------------------
-  product   Product @relation(fields: [productId], references: [id])
+  // References --------------------------------------------------
+  product Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
 }
 
 
 model QuantityProductField {
-  // Fields ----------------------------------------------------------
+  // Fields ------------------------------------------------------
   productId   Int
   name        String
   value       Float
   metricUnit  String
 
-  // References -----------------------------------------------
-  product     Product @relation(fields: [productId], references: [id])
+  // References --------------------------------------------------
+  product Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
 }
 
 
 model FractionProductField {
-  // Fields ----------------------------------------------------------------
+  // Fields ------------------------------------------------------
   productId         Int
   name              String
   numeratorValue    Int
   denominatorValue  Int
   metricUnit        String
 
-  // References -----------------------------------------------------
-  product           Product @relation(fields: [productId], references: [id])
+  // References --------------------------------------------------
+  product Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
 }
 
 
 model StringProductField {
-  // Fields --------------------------------------------------------
+  // Fields ------------------------------------------------------
   productId Int
   name      String
   value     String
 
-  // References ---------------------------------------------
-  product   Product @relation(fields: [productId], references: [id])
+  // References --------------------------------------------------
+  product Product @relation(fields: [productId], references: [id])
 
   @@id([productId, name])
 }
@@ -221,14 +221,14 @@ model Sale {
 
 
 model SalesOnProducts {
-  // Fields --------------------------------------------------------
+  // Fields ------------------------------------------------------
   productId Int
   saleId    Int
   quantity  Int @default(1)
 
-  // References ----------------------------------------------------
-  product   Product @relation(fields: [productId], references: [id])
-  sale      Sale    @relation(fields: [saleId], references: [id])
+  // References --------------------------------------------------
+  product Product @relation(fields: [productId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id])
 
   @@id([productId, saleId])
 }

@@ -31,12 +31,12 @@ export class OffersController {
   //   return await this.offersService.createProductOffer(body);
   // }
 
-  @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
-  @UsePipes(new ValidationPipe())
-  @Post('/assorted-product-offers')
-  async createAssortedProductOffer(
-    @Body() body: CreateAssortedProductOfferDto,
-  ) {
-    return await this.offersService.createAssortedProductOffer(body);
-  }
+  // @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
+  // @UsePipes(new ValidationPipe())
+  // @Post('/assorted-product-offers')
+  // async createAssortedProductOffer(
+  //   @Body() body: CreateAssortedProductOfferDto,
+  // ) {
+  //   return await this.offersService.createAssortedProductOffer(body);
+  // }
 }

@@ -1,9 +1,11 @@
 import {
   Body,
+  Request,
   Controller,
   Get,
   Param,
   Post,
+  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -103,8 +105,10 @@ export class ProductsPrivateController {
   @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
   @UsePipes(new ValidationPipe())
   @Post()
-  async create(@Body() body: CreateProductDto) {
-    const response = this.productsService.create(body);
+  async create(@Body() body: CreateProductDto, @Req() req: Request) {
+    const currentUserId = req['user'].id;
+
+    const response = this.productsService.create(body, currentUserId);
 
     this.gateway.sendUpdatedSection(SECTIONS.manufacturers);
     return response;
