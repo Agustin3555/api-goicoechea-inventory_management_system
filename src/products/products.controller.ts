@@ -9,11 +9,13 @@ import {
   UseGuards,
   UsePipes,
   ValidationPipe,
+  Put,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard, RoleGuard } from 'src/auth/guards';
 import { IdParamDto } from 'src/tools/dtos/idParam.dto';
 import {
+  EditProductDto,
   GetBooleanCharSuggestionsDto,
   GetFractionCharSuggestionsDto,
   GetQuantityCharSuggestionsDto,
@@ -30,19 +32,26 @@ export class ProductsPublicController {
 
   @Get()
   async findAll() {
-    const response = this.productsService.findAll();
+    const response = await this.productsService.findAll();
 
     return response;
   }
 
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @Get(':id')
-  async findOne(@Param() param: IdParamDto) {
-    const { id } = param;
-    const response = this.productsService.getOneFullData(id);
+  @Get(':name')
+  async findByName(@Param('name') name: string) {
+    const response = await this.productsService.findByName(name);
 
     return response;
   }
+
+  // @UsePipes(new ValidationPipe({ transform: true }))
+  // @Get(':id')
+  // async findOne(@Param() param: IdParamDto) {
+  //   const { id } = param;
+  //   const response = await this.productsService.getOneFullDataPublic(id);
+
+  //   return response;
+  // }
 
   // TODO: cambiar por metodos GET
 
@@ -51,7 +60,7 @@ export class ProductsPublicController {
   async getForBooleanCharSuggestions(
     @Body() body: GetBooleanCharSuggestionsDto,
   ) {
-    const response = this.productsService.getBooleanCharSuggestions(body);
+    const response = await this.productsService.getBooleanCharSuggestions(body);
 
     return response;
   }
@@ -61,7 +70,9 @@ export class ProductsPublicController {
   async getQuantityCharSuggestions(
     @Body() body: GetQuantityCharSuggestionsDto,
   ) {
-    const response = this.productsService.getQuantityCharSuggestions(body);
+    const response = await this.productsService.getQuantityCharSuggestions(
+      body,
+    );
 
     return response;
   }
@@ -71,7 +82,9 @@ export class ProductsPublicController {
   async getFractionCharSuggestions(
     @Body() body: GetFractionCharSuggestionsDto,
   ) {
-    const response = this.productsService.getFractionCharSuggestions(body);
+    const response = await this.productsService.getFractionCharSuggestions(
+      body,
+    );
 
     return response;
   }
@@ -79,7 +92,7 @@ export class ProductsPublicController {
   @UsePipes(new ValidationPipe())
   @Post('string-chars/suggestions')
   async getStringCharSuggestions(@Body() body: GetStringCharSuggestionsDto) {
-    const response = this.productsService.getStringCharSuggestions(body);
+    const response = await this.productsService.getStringCharSuggestions(body);
 
     return response;
   }
@@ -97,7 +110,7 @@ export class ProductsPrivateController {
   @Get(':id')
   async findOne(@Param() param: IdParamDto) {
     const { id } = param;
-    const response = this.productsService.getOneFullData(id);
+    const response = await this.productsService.getOneFullDataPrivate(id);
 
     return response;
   }
@@ -108,17 +121,26 @@ export class ProductsPrivateController {
   async create(@Body() body: CreateProductDto, @Req() req: Request) {
     const currentUserId = req['user'].id;
 
-    const response = this.productsService.create(body, currentUserId);
+    const response = await this.productsService.create(body, currentUserId);
 
-    this.gateway.sendUpdatedSection(SECTIONS.manufacturers);
+    this.gateway.sendUpdatedSection(SECTIONS.products);
     return response;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('by/name/:name')
-  async findByName(@Param('name') name: string) {
-    const response = this.productsService.findByName(name);
+  @UseGuards(JwtAuthGuard, new RoleGuard([Role.ADMIN]))
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Put(':id')
+  async edit(
+    @Body() body: EditProductDto,
+    @Req() req: Request,
+    @Param() param: IdParamDto,
+  ) {
+    const currentUserId = req['user'].id;
+    const { id } = param;
 
+    const response = await this.productsService.edit(id, body, currentUserId);
+
+    this.gateway.sendUpdatedSection(SECTIONS.products);
     return response;
   }
 }

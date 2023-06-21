@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 export * from './createProduct.dto';
+export * from './editProduct.dto';
 export * from './getBooleanCharSuggestions.dto';
 export * from './getFractionCharSuggestions.dto';
 export * from './getQuantityCharSuggestions.dto';

@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards';
 
 @Controller('auth')
-export class AuthController {
+export class AuthPublicController {
   constructor(private authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)

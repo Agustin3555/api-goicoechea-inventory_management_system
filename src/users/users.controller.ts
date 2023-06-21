@@ -20,8 +20,8 @@ import { UsersService } from './users.service';
 import { SECTIONS } from 'src/tools';
 import { AppGateway } from 'src/app.gateway';
 
-@Controller('users')
-export class UsersController {
+@Controller('private/users')
+export class UsersPrivateController {
   constructor(
     private readonly usersService: UsersService,
     private readonly gateway: AppGateway,
